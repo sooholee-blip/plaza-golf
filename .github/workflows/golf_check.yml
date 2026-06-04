@@ -1,0 +1,36 @@
+name: 플라자CC 타이거 코스 조회
+
+on:
+  # 텔레그램에서 수동 트리거
+  workflow_dispatch:
+  # 매일 오전 7시 자동 실행 (KST = UTC+9, 즉 UTC 22:00)
+  schedule:
+    - cron: '0 22 * * *'
+
+jobs:
+  check-golf:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+
+      - name: Python 설정
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: 패키지 설치
+        run: |
+          pip install playwright httpx
+          playwright install chromium
+          playwright install-deps chromium
+
+      - name: 골프 예약 조회 실행
+        env:
+          PLAZACC_ID:          ${{ secrets.PLAZACC_ID }}
+          PLAZACC_PW:          ${{ secrets.PLAZACC_PW }}
+          TELEGRAM_BOT_TOKEN:  ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID:    ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python plaza_golf_server.py

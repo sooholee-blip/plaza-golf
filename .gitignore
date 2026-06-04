@@ -1,0 +1,12 @@
+debug_*.html
+booking_*.html
+reservation_*.html
+inspect_*.py
+plaza_check*.py
+plaza_explore.py
+plaza_golf_reservation.py
+naver_*.py
+shopping_*.html
+plaza_menu_*.html
+__pycache__/
+*.pyc
