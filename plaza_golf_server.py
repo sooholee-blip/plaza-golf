@@ -67,8 +67,8 @@ async def wait_frame(page: Page, substr: str, timeout: float = 20) -> Frame | No
 
 # ── 로그인 + 예약 페이지 진입 ─────────────────
 async def login_and_enter(page: Page):
-    await page.goto(LOGIN_URL)
-    await page.wait_for_load_state("networkidle")
+    await page.goto(LOGIN_URL, timeout=60000)
+    await page.wait_for_load_state("networkidle", timeout=60000)
     await page.fill('input[name="username"]', ID)
     await page.fill('input[name="userpwd"]', PW)
     await page.click('input#btnLogin')
@@ -281,7 +281,10 @@ async def main():
     all_slots: list[str] = []
 
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=True)
+        browser = await p.chromium.launch(
+            headless=True,
+            args=["--no-sandbox", "--disable-dev-shm-usage"],
+        )
         page    = await browser.new_page()
 
         try:
