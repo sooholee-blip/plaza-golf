@@ -2,23 +2,26 @@
 """
 플라자CC 타이거 코스 오전 예약 가능 슬롯 조회 — GitHub Actions 서버용
 - headless 모드로 실행
-- 결과를 Telegram 으로 전송
-- 환경변수: PLAZACC_ID, PLAZACC_PW, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
+- 결과를 Gmail 로 전송
+- 환경변수: PLAZACC_ID, PLAZACC_PW, GMAIL_USER, GMAIL_APP_PW, NOTIFY_EMAIL
 """
 
 import asyncio
 import os
 import re
-import sys
+import smtplib
 from datetime import date, timedelta
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
-import httpx
 from playwright.async_api import async_playwright, Frame, Page
 
-ID = os.environ.get("PLAZACC_ID", "sooholee@btstech.co.kr")
-PW = os.environ.get("PLAZACC_PW", "9799Suho!@")
-TELEGRAM_TOKEN   = os.environ.get("TELEGRAM_BOT_TOKEN", "")
-TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "")
+# ── 환경변수 ──────────────────────────────────
+ID           = os.environ.get("PLAZACC_ID", "sooholee@btstech.co.kr")
+PW           = os.environ.get("PLAZACC_PW", "9799Suho!@")
+GMAIL_USER   = os.environ.get("GMAIL_USER", "")       # 발송 Gmail 주소
+GMAIL_APP_PW = os.environ.get("GMAIL_APP_PW", "")     # Gmail 앱 비밀번호
+NOTIFY_EMAIL = os.environ.get("NOTIFY_EMAIL", "")     # 수신 이메일 (핸드폰 연동)
 
 LOGIN_URL    = "https://www.plazacc.co.kr/plzcc/irsweb/golf2/member/login.do"
 BOOKING_HOST = "booking.hanwharesort.co.kr"
@@ -26,24 +29,32 @@ MORNING_HOURS = set(range(6, 12))
 COL_NAMES     = ["타이거(OUT)", "타이거(IN)", "라이온(OUT)", "라이온(IN)"]
 
 
+# ── 이메일 발송 ───────────────────────────────
+def send_email(subject: str, body_html: str):
+    if not GMAIL_USER or not GMAIL_APP_PW or not NOTIFY_EMAIL:
+        print("[이메일] 설정 없음 — 콘솔 출력만")
+        return
+
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = subject
+    msg["From"]    = GMAIL_USER
+    msg["To"]      = NOTIFY_EMAIL
+    msg.attach(MIMEText(body_html, "html", "utf-8"))
+
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+        server.login(GMAIL_USER, GMAIL_APP_PW)
+        server.sendmail(GMAIL_USER, NOTIFY_EMAIL, msg.as_string())
+
+    print(f"[이메일] 발송 완료 → {NOTIFY_EMAIL}")
+
+
+# ── 날짜 범위 ─────────────────────────────────
 def get_date_range() -> list[date]:
     today = date.today()
     return [today + timedelta(days=i) for i in range(1, 31)]
 
 
-async def send_telegram(text: str):
-    if not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
-        print("[Telegram] 토큰 없음 — 콘솔 출력만")
-        return
-    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-    async with httpx.AsyncClient() as client:
-        await client.post(url, json={
-            "chat_id": TELEGRAM_CHAT_ID,
-            "text": text,
-            "parse_mode": "HTML",
-        })
-
-
+# ── 프레임 대기 ───────────────────────────────
 async def wait_frame(page: Page, substr: str, timeout: float = 20) -> Frame | None:
     deadline = asyncio.get_event_loop().time() + timeout
     while asyncio.get_event_loop().time() < deadline:
@@ -54,6 +65,7 @@ async def wait_frame(page: Page, substr: str, timeout: float = 20) -> Frame | No
     return None
 
 
+# ── 로그인 + 예약 페이지 진입 ─────────────────
 async def login_and_enter(page: Page):
     await page.goto(LOGIN_URL)
     await page.wait_for_load_state("networkidle")
@@ -82,6 +94,7 @@ async def login_and_enter(page: Page):
         raise RuntimeError("serviceF02 로드 실패")
 
 
+# ── 달력 유틸 ─────────────────────────────────
 async def get_calendar_dates(step2: Frame) -> set[str]:
     try:
         result = await step2.evaluate("""
@@ -127,6 +140,7 @@ async def goto_next_month(step2: Frame) -> bool:
         return False
 
 
+# ── 날짜 선택 ─────────────────────────────────
 _month_advances: int = 0
 
 
@@ -165,6 +179,7 @@ async def select_date(page: Page, target: date) -> bool:
         return False
 
 
+# ── 슬롯 읽기 + 파싱 ──────────────────────────
 async def read_slots(page: Page, target: date) -> list[str]:
     step3 = None
     for _ in range(20):
@@ -175,7 +190,6 @@ async def read_slots(page: Page, target: date) -> list[str]:
         if step3:
             break
         await asyncio.sleep(0.3)
-
     if not step3:
         return []
     return parse_slots(await step3.content(), target)
@@ -213,13 +227,56 @@ def parse_slots(html: str, target: date) -> list[str]:
     return results
 
 
+# ── 결과 → HTML 이메일 본문 ───────────────────
+def build_email(slots: list[str], query_date: str) -> tuple[str, str]:
+    if not slots:
+        subject = f"[플라자CC] 타이거 코스 오전 예약 가능 슬롯 없음 ({query_date})"
+        body    = f"<p>조회일: {query_date}<br>예약 가능한 타이거 코스 오전 슬롯이 없습니다.</p>"
+        return subject, body
+
+    subject = f"[플라자CC] 타이거 코스 오전 {len(slots)}개 슬롯 가능 ({query_date})"
+
+    rows = ""
+    prev_date = ""
+    for s in slots:
+        d        = s[:10]
+        time_p   = s[12:17]
+        course   = s[18:]
+        if d != prev_date:
+            rows += f'<tr><td colspan="2" style="background:#1a5c38;color:white;padding:8px 12px;font-weight:bold;">📅 {d}</td></tr>'
+            prev_date = d
+        rows += (
+            f'<tr>'
+            f'<td style="padding:6px 20px;">⏰ {time_p}</td>'
+            f'<td style="padding:6px 20px;color:#1a5c38;font-weight:bold;">{course}</td>'
+            f'</tr>'
+        )
+
+    body = f"""
+    <div style="font-family:sans-serif;max-width:480px;margin:auto;">
+      <h2 style="background:#1a5c38;color:white;padding:16px;border-radius:8px 8px 0 0;margin:0;">
+        🏌️ 플라자CC 타이거 코스
+      </h2>
+      <p style="color:#666;margin:12px 0 4px;">조회일: {query_date} &nbsp;|&nbsp; 총 {len(slots)}개 슬롯</p>
+      <table style="width:100%;border-collapse:collapse;border:1px solid #ddd;border-radius:0 0 8px 8px;overflow:hidden;">
+        {rows}
+      </table>
+      <p style="color:#999;font-size:12px;margin-top:12px;">
+        * 오전(06:00~11:59) 예약 가능 시간대만 표시됩니다.
+      </p>
+    </div>
+    """
+    return subject, body
+
+
+# ── 메인 ──────────────────────────────────────
 async def main():
     global _month_advances
     _month_advances = 0
 
-    dates = get_date_range()
+    dates     = get_date_range()
+    today_str = date.today().strftime("%Y-%m-%d")
     print(f"조회 시작: {dates[0]} ~ {dates[-1]}")
-    await send_telegram(f"🏌️ 플라자CC 타이거 코스 조회 시작\n{dates[0]} ~ {dates[-1]}")
 
     all_slots: list[str] = []
 
@@ -230,9 +287,11 @@ async def main():
         try:
             await login_and_enter(page)
         except Exception as e:
-            msg = f"❌ 로그인/진입 실패: {e}"
-            print(msg)
-            await send_telegram(msg)
+            print(f"[오류] 로그인/진입 실패: {e}")
+            send_email(
+                f"[플라자CC] 조회 실패 ({today_str})",
+                f"<p>오류: {e}</p>"
+            )
             await browser.close()
             return
 
@@ -246,26 +305,10 @@ async def main():
 
         await browser.close()
 
-    # ── 결과 전송 ──────────────────────────────
-    today_str = date.today().strftime("%Y-%m-%d")
-    if all_slots:
-        lines = [f"🏌️ <b>타이거 코스 오전 예약 가능</b> ({today_str} 기준)\n"]
-        prev_date = ""
-        for s in all_slots:
-            d = s[:10]
-            if d != prev_date:
-                lines.append(f"\n📅 <b>{d}</b>")
-                prev_date = d
-            time_part = s[12:17]
-            course    = s[18:]
-            lines.append(f"  ⏰ {time_part}  {course}")
-        lines.append(f"\n총 {len(all_slots)}개 슬롯")
-        msg = "\n".join(lines)
-    else:
-        msg = f"🏌️ 타이거 코스 오전 예약 가능 슬롯 없음 ({today_str} 기준)"
-
-    print("\n" + msg)
-    await send_telegram(msg)
+    # ── 이메일 발송 ────────────────────────────
+    subject, body = build_email(all_slots, today_str)
+    print(f"\n결과: {len(all_slots)}개 슬롯 발견")
+    send_email(subject, body)
 
 
 if __name__ == "__main__":

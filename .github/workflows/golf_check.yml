@@ -1,11 +1,9 @@
 name: 플라자CC 타이거 코스 조회
 
 on:
-  # 텔레그램에서 수동 트리거
-  workflow_dispatch:
-  # 매일 오전 7시 자동 실행 (KST = UTC+9, 즉 UTC 22:00)
+  workflow_dispatch:       # GitHub 앱에서 수동 실행
   schedule:
-    - cron: '0 22 * * *'
+    - cron: '0 22 * * *'  # 매일 오전 7시 KST (UTC 22:00) 자동 실행
 
 jobs:
   check-golf:
@@ -23,14 +21,15 @@ jobs:
 
       - name: 패키지 설치
         run: |
-          pip install playwright httpx
+          pip install playwright
           playwright install chromium
           playwright install-deps chromium
 
       - name: 골프 예약 조회 실행
         env:
-          PLAZACC_ID:          ${{ secrets.PLAZACC_ID }}
-          PLAZACC_PW:          ${{ secrets.PLAZACC_PW }}
-          TELEGRAM_BOT_TOKEN:  ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID:    ${{ secrets.TELEGRAM_CHAT_ID }}
+          PLAZACC_ID:    ${{ secrets.PLAZACC_ID }}
+          PLAZACC_PW:    ${{ secrets.PLAZACC_PW }}
+          GMAIL_USER:    ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PW:  ${{ secrets.GMAIL_APP_PW }}
+          NOTIFY_EMAIL:  ${{ secrets.NOTIFY_EMAIL }}
         run: python plaza_golf_server.py
