@@ -239,11 +239,12 @@ def build_email(slots: list[str], query_date: str) -> tuple[str, str]:
     rows = ""
     prev_date = ""
     for s in slots:
-        d        = s[:10]
-        time_p   = s[12:17]
-        course   = s[18:]
+        d        = s[:10]                    # 2026-06-08
+        dow      = s[11:14]                   # Mon
+        time_p   = s[16:21]                   # 06:02
+        course   = s[22:]                     # 타이거(OUT)
         if d != prev_date:
-            rows += f'<tr><td colspan="2" style="background:#1a5c38;color:white;padding:8px 12px;font-weight:bold;">📅 {d}</td></tr>'
+            rows += f'<tr><td colspan="2" style="background:#1a5c38;color:white;padding:8px 12px;font-weight:bold;">📅 {d} ({dow})</td></tr>'
             prev_date = d
         rows += (
             f'<tr>'
