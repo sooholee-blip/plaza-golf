@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#1a5c38">
+  <link rel="manifest" href="manifest.json">
+  <title>골프 예약 조회</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+      background: linear-gradient(160deg, #0f3d20 0%, #1a5c38 60%, #2d7a4f 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+      color: white;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .golf-icon {
+      font-size: 64px;
+      margin-bottom: 12px;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+    }
+
+    h1 {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 6px;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      opacity: 0.75;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.12);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 20px;
+      padding: 28px 24px;
+      width: 100%;
+      max-width: 380px;
+      margin-bottom: 20px;
+    }
+
+    .card-title {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      opacity: 0.6;
+      margin-bottom: 8px;
+    }
+
+    .card-info {
+      font-size: 14px;
+      opacity: 0.9;
+      line-height: 1.6;
+    }
+
+    .run-btn {
+      width: 100%;
+      max-width: 380px;
+      padding: 18px;
+      background: #ffffff;
+      color: #1a5c38;
+      border: none;
+      border-radius: 16px;
+      font-size: 17px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+      letter-spacing: -0.3px;
+    }
+
+    .run-btn:active {
+      transform: scale(0.97);
+    }
+
+    .run-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .status-box {
+      width: 100%;
+      max-width: 380px;
+      margin-top: 20px;
+      padding: 16px 20px;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 500;
+      text-align: center;
+      display: none;
+    }
+
+    .status-running {
+      background: rgba(255,200,0,0.2);
+      border: 1px solid rgba(255,200,0,0.4);
+      color: #ffe066;
+    }
+
+    .status-success {
+      background: rgba(100,255,150,0.15);
+      border: 1px solid rgba(100,255,150,0.3);
+      color: #7dffaa;
+    }
+
+    .status-error {
+      background: rgba(255,100,100,0.15);
+      border: 1px solid rgba(255,100,100,0.3);
+      color: #ff9999;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255,200,0,0.3);
+      border-top-color: #ffe066;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .schedule-info {
+      width: 100%;
+      max-width: 380px;
+      margin-top: 12px;
+      text-align: center;
+      font-size: 12px;
+      opacity: 0.5;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="golf-icon">⛳</div>
+    <h1>플라자CC 골프 예약 조회</h1>
+    <div class="subtitle">타이거 코스 오전 예약 가능 슬롯</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">조회 대상</div>
+    <div class="card-info">
+      🏌️ 타이거 코스 (OUT / IN)<br>
+      ⏰ 오전 06:00 ~ 11:59<br>
+      📅 오늘부터 30일 이내
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">결과 수신</div>
+    <div class="card-info">
+      📧 ssonaudo@gmail.com<br>
+      ⏱ 조회 완료까지 약 3~5분
+    </div>
+  </div>
+
+  <button class="run-btn" id="runBtn" onclick="runWorkflow()">
+    🔍 지금 조회 시작
+  </button>
+
+  <div class="status-box" id="statusBox"></div>
+
+  <div class="schedule-info">매일 오전 7시 자동 실행됩니다</div>
+
+  <script>
+    const REPO  = 'sooholee-blip/plaza-golf';
+    const WORKFLOW = 'golf_check.yml';
+
+    // 토큰을 localStorage 에 저장 (최초 1회 입력)
+    function getToken() {
+      let t = localStorage.getItem('gh_token');
+      if (!t) {
+        t = prompt('GitHub 토큰을 입력하세요\n(최초 1회만 입력하면 저장됩니다)');
+        if (t) localStorage.setItem('gh_token', t.trim());
+      }
+      return t;
+    }
+
+    function resetToken() {
+      localStorage.removeItem('gh_token');
+      alert('토큰이 삭제되었습니다. 다음 실행 시 다시 입력해주세요.');
+    }
+
+    async function runWorkflow() {
+      const TOKEN = getToken();
+      if (!TOKEN) return;
+      const btn = document.getElementById('runBtn');
+      const box = document.getElementById('statusBox');
+
+      btn.disabled = true;
+      btn.textContent = '⏳ 조회 요청 중...';
+
+      box.className = 'status-box status-running';
+      box.style.display = 'block';
+      box.innerHTML = '<span class="spinner"></span> 서버에 조회를 요청하고 있습니다...';
+
+      try {
+        const res = await fetch(
+          `https://api.github.com/repos/${REPO}/actions/workflows/${WORKFLOW}/dispatches`,
+          {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${TOKEN}`,
+              'Accept': 'application/vnd.github+json',
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ ref: 'master' })
+          }
+        );
+
+        if (res.status === 204) {
+          box.className = 'status-box status-success';
+          box.innerHTML = '✅ 조회 시작됨!<br><small>약 3~5분 후 이메일을 확인하세요 📧</small>';
+          btn.textContent = '✅ 조회 요청 완료';
+          setTimeout(() => {
+            btn.disabled = false;
+            btn.textContent = '🔍 지금 조회 시작';
+          }, 10000);
+        } else {
+          const err = await res.text();
+          throw new Error(`${res.status}: ${err}`);
+        }
+      } catch (e) {
+        box.className = 'status-box status-error';
+        box.innerHTML = `❌ 오류 발생<br><small>${e.message}</small>`;
+        btn.disabled = false;
+        btn.textContent = '🔍 지금 조회 시작';
+      }
+    }
+
+    // 서비스 워커 등록 (PWA 오프라인 지원)
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
+  </script>
+</body>
+</html>

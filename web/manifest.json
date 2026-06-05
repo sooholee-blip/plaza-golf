@@ -1,0 +1,22 @@
+{
+  "name": "플라자CC 골프 예약 조회",
+  "short_name": "골프예약",
+  "description": "플라자CC 타이거 코스 오전 예약 가능 슬롯 조회",
+  "start_url": "/plaza-golf/web/",
+  "display": "standalone",
+  "background_color": "#0f3d20",
+  "theme_color": "#1a5c38",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
