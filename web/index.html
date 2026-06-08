@@ -18,136 +18,145 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 40px 20px;
+      padding: 36px 20px 60px;
       color: white;
     }
 
     .header {
       text-align: center;
-      margin-bottom: 40px;
+      margin-bottom: 28px;
     }
 
-    .golf-icon {
-      font-size: 64px;
-      margin-bottom: 12px;
-      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
-    }
+    .golf-icon { font-size: 56px; margin-bottom: 10px; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3)); }
 
-    h1 {
-      font-size: 22px;
-      font-weight: 700;
-      letter-spacing: -0.5px;
-      margin-bottom: 6px;
-    }
+    h1 { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 4px; }
 
-    .subtitle {
-      font-size: 13px;
-      opacity: 0.75;
-    }
+    .subtitle { font-size: 13px; opacity: 0.7; }
 
-    .card {
-      background: rgba(255,255,255,0.12);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255,255,255,0.2);
-      border-radius: 20px;
-      padding: 28px 24px;
-      width: 100%;
-      max-width: 380px;
-      margin-bottom: 20px;
-    }
-
-    .card-title {
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      opacity: 0.6;
-      margin-bottom: 8px;
-    }
-
-    .card-info {
-      font-size: 14px;
-      opacity: 0.9;
-      line-height: 1.6;
-    }
-
+    /* ── 버튼 ── */
     .run-btn {
-      width: 100%;
-      max-width: 380px;
-      padding: 18px;
-      background: #ffffff;
-      color: #1a5c38;
-      border: none;
-      border-radius: 16px;
-      font-size: 17px;
-      font-weight: 700;
+      width: 100%; max-width: 400px;
+      padding: 16px;
+      background: #ffffff; color: #1a5c38;
+      border: none; border-radius: 14px;
+      font-size: 16px; font-weight: 700;
       cursor: pointer;
       transition: all 0.2s;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-      letter-spacing: -0.3px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.25);
     }
+    .run-btn:active { transform: scale(0.97); }
+    .run-btn:disabled { opacity: 0.55; cursor: not-allowed; }
 
-    .run-btn:active {
-      transform: scale(0.97);
+    /* ── 상태바 ── */
+    .status-bar {
+      width: 100%; max-width: 400px;
+      margin-top: 14px;
+      padding: 13px 18px;
+      border-radius: 12px;
+      font-size: 14px; font-weight: 500;
+      display: none; align-items: center; gap: 10px;
     }
+    .status-bar.show { display: flex; }
 
-    .run-btn:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
+    .status-idle    { background: rgba(255,255,255,0.1);  border: 1px solid rgba(255,255,255,0.2); }
+    .status-running { background: rgba(255,200,0,0.18);   border: 1px solid rgba(255,200,0,0.35);  color: #ffe066; }
+    .status-done    { background: rgba(100,255,150,0.15); border: 1px solid rgba(100,255,150,0.3); color: #7dffaa; }
+    .status-error   { background: rgba(255,100,100,0.15); border: 1px solid rgba(255,100,100,0.3); color: #ff9999; }
 
-    .status-box {
-      width: 100%;
-      max-width: 380px;
-      margin-top: 20px;
-      padding: 16px 20px;
-      border-radius: 14px;
-      font-size: 14px;
-      font-weight: 500;
-      text-align: center;
+    /* 진행 프로그레스 바 */
+    .progress-wrap {
+      width: 100%; max-width: 400px;
+      margin-top: 10px;
+      height: 4px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 4px;
+      overflow: hidden;
       display: none;
     }
-
-    .status-running {
-      background: rgba(255,200,0,0.2);
-      border: 1px solid rgba(255,200,0,0.4);
-      color: #ffe066;
+    .progress-wrap.show { display: block; }
+    .progress-fill {
+      height: 100%;
+      background: #ffe066;
+      border-radius: 4px;
+      width: 0%;
+      transition: width 0.5s ease;
+      animation: progress-pulse 2s ease-in-out infinite;
     }
-
-    .status-success {
-      background: rgba(100,255,150,0.15);
-      border: 1px solid rgba(100,255,150,0.3);
-      color: #7dffaa;
-    }
-
-    .status-error {
-      background: rgba(255,100,100,0.15);
-      border: 1px solid rgba(255,100,100,0.3);
-      color: #ff9999;
+    @keyframes progress-pulse {
+      0%,100% { opacity: 1; }
+      50%      { opacity: 0.6; }
     }
 
     .spinner {
-      display: inline-block;
-      width: 14px;
-      height: 14px;
+      width: 16px; height: 16px; flex-shrink: 0;
       border: 2px solid rgba(255,200,0,0.3);
       border-top-color: #ffe066;
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
-      vertical-align: middle;
-      margin-right: 8px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── 결과 패널 ── */
+    .result-panel {
+      width: 100%; max-width: 400px;
+      margin-top: 22px;
     }
 
-    @keyframes spin {
-      to { transform: rotate(360deg); }
+    .result-meta {
+      font-size: 12px; opacity: 0.55;
+      margin-bottom: 12px; text-align: right;
     }
 
-    .schedule-info {
-      width: 100%;
-      max-width: 380px;
-      margin-top: 12px;
+    .empty-msg {
       text-align: center;
-      font-size: 12px;
+      padding: 36px 0;
       opacity: 0.5;
+      font-size: 14px;
+    }
+
+    .date-group { margin-bottom: 14px; }
+
+    .date-label {
+      font-size: 13px; font-weight: 700;
+      background: rgba(255,255,255,0.15);
+      border-radius: 8px;
+      padding: 7px 14px;
+      margin-bottom: 6px;
+      display: flex; align-items: center; gap: 6px;
+    }
+
+    .slot-row {
+      display: flex; align-items: center;
+      background: rgba(255,255,255,0.09);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 10px;
+      padding: 10px 14px;
+      margin-bottom: 5px;
+      gap: 12px;
+    }
+    .slot-time { font-size: 18px; font-weight: 700; min-width: 52px; }
+    .slot-course { font-size: 13px; opacity: 0.8; }
+    .slot-badge {
+      margin-left: auto;
+      background: rgba(100,255,150,0.2);
+      border: 1px solid rgba(100,255,150,0.3);
+      color: #7dffaa;
+      font-size: 11px; font-weight: 600;
+      padding: 3px 8px; border-radius: 20px;
+    }
+
+    .schedule-note {
+      margin-top: 18px;
+      text-align: center;
+      font-size: 12px; opacity: 0.4;
+    }
+
+    .token-reset {
+      margin-top: 8px;
+      text-align: center;
+      font-size: 11px; opacity: 0.35;
+      cursor: pointer;
+      text-decoration: underline;
     }
   </style>
 </head>
@@ -156,65 +165,101 @@
   <div class="header">
     <div class="golf-icon">⛳</div>
     <h1>플라자CC 골프 예약 조회</h1>
-    <div class="subtitle">타이거 코스 오전 예약 가능 슬롯</div>
+    <div class="subtitle">타이거 코스 오전(06:00~11:59) · 30일 이내</div>
   </div>
 
-  <div class="card">
-    <div class="card-title">조회 대상</div>
-    <div class="card-info">
-      🏌️ 타이거 코스 (OUT / IN)<br>
-      ⏰ 오전 06:00 ~ 11:59<br>
-      📅 오늘부터 30일 이내
-    </div>
+  <button class="run-btn" id="runBtn" onclick="runWorkflow()">🔍 지금 조회 시작</button>
+
+  <!-- 상태바 -->
+  <div class="status-bar" id="statusBar">
+    <div class="spinner" id="statusSpinner" style="display:none"></div>
+    <span id="statusText"></span>
   </div>
 
-  <div class="card">
-    <div class="card-title">결과 수신</div>
-    <div class="card-info">
-      📧 ssonaudo@gmail.com<br>
-      ⏱ 조회 완료까지 약 3~5분
-    </div>
+  <!-- 진행 바 -->
+  <div class="progress-wrap" id="progressWrap">
+    <div class="progress-fill" id="progressFill"></div>
   </div>
 
-  <button class="run-btn" id="runBtn" onclick="runWorkflow()">
-    🔍 지금 조회 시작
-  </button>
+  <!-- 결과 -->
+  <div class="result-panel" id="resultPanel"></div>
 
-  <div class="status-box" id="statusBox"></div>
-
-  <div class="schedule-info">매일 오전 7시 자동 실행됩니다</div>
+  <div class="schedule-note">매일 오전 7시 자동 실행됩니다</div>
+  <div class="token-reset" onclick="resetToken()">토큰 초기화</div>
 
   <script>
-    const REPO  = 'sooholee-blip/plaza-golf';
+    const REPO     = 'sooholee-blip/plaza-golf';
     const WORKFLOW = 'golf_check.yml';
+    const RESULTS_URL = `https://sooholee-blip.github.io/plaza-golf/web/results.json`;
 
-    // 토큰을 localStorage 에 저장 (최초 1회 입력)
+    let pollTimer  = null;
+    let progressTimer = null;
+    let progressVal = 0;
+
+    /* ── 토큰 관리 ── */
     function getToken() {
       let t = localStorage.getItem('gh_token');
       if (!t) {
-        t = prompt('GitHub 토큰을 입력하세요\n(최초 1회만 입력하면 저장됩니다)');
+        t = prompt('GitHub Personal Access Token을 입력하세요\n(최초 1회만 입력하면 저장됩니다)\n\n필요 권한: repo + workflow');
         if (t) localStorage.setItem('gh_token', t.trim());
       }
       return t;
     }
-
     function resetToken() {
-      localStorage.removeItem('gh_token');
-      alert('토큰이 삭제되었습니다. 다음 실행 시 다시 입력해주세요.');
+      if (confirm('저장된 토큰을 삭제할까요?')) {
+        localStorage.removeItem('gh_token');
+        alert('삭제됐습니다. 다음 조회 시 다시 입력해주세요.');
+      }
     }
 
+    /* ── 상태 UI ── */
+    function setStatus(type, msg, showSpinner = false) {
+      const bar = document.getElementById('statusBar');
+      const txt = document.getElementById('statusText');
+      const sp  = document.getElementById('statusSpinner');
+      bar.className = 'status-bar show ' + type;
+      txt.textContent = msg;
+      sp.style.display = showSpinner ? 'block' : 'none';
+    }
+
+    function startProgress() {
+      progressVal = 5;
+      const wrap = document.getElementById('progressWrap');
+      const fill = document.getElementById('progressFill');
+      wrap.classList.add('show');
+      fill.style.width = progressVal + '%';
+
+      progressTimer = setInterval(() => {
+        // 최대 90%까지 서서히 채움 (완료 시 100%로 점프)
+        if (progressVal < 90) {
+          progressVal += Math.random() * 2.5;
+          fill.style.width = Math.min(progressVal, 90) + '%';
+        }
+      }, 3000);
+    }
+
+    function finishProgress(success) {
+      clearInterval(progressTimer);
+      const fill = document.getElementById('progressFill');
+      fill.style.background = success ? '#7dffaa' : '#ff9999';
+      fill.style.width = '100%';
+      setTimeout(() => {
+        document.getElementById('progressWrap').classList.remove('show');
+        fill.style.width = '0%';
+        fill.style.background = '#ffe066';
+      }, 1500);
+    }
+
+    /* ── 워크플로우 트리거 ── */
     async function runWorkflow() {
       const TOKEN = getToken();
       if (!TOKEN) return;
-      const btn = document.getElementById('runBtn');
-      const box = document.getElementById('statusBox');
 
+      const btn = document.getElementById('runBtn');
       btn.disabled = true;
       btn.textContent = '⏳ 조회 요청 중...';
-
-      box.className = 'status-box status-running';
-      box.style.display = 'block';
-      box.innerHTML = '<span class="spinner"></span> 서버에 조회를 요청하고 있습니다...';
+      setStatus('status-running', '서버에 조회를 요청하는 중...', true);
+      startProgress();
 
       try {
         const res = await fetch(
@@ -231,26 +276,132 @@
         );
 
         if (res.status === 204) {
-          box.className = 'status-box status-success';
-          box.innerHTML = '✅ 조회 시작됨!<br><small>약 3~5분 후 이메일을 확인하세요 📧</small>';
-          btn.textContent = '✅ 조회 요청 완료';
-          setTimeout(() => {
-            btn.disabled = false;
-            btn.textContent = '🔍 지금 조회 시작';
-          }, 10000);
+          btn.textContent = '⏳ 조회 진행 중...';
+          setStatus('status-running', '조회 진행 중 · 약 3~5분 소요됩니다', true);
+          // 10초 후부터 상태 폴링 시작
+          setTimeout(() => pollRunStatus(TOKEN), 10000);
         } else {
           const err = await res.text();
           throw new Error(`${res.status}: ${err}`);
         }
       } catch (e) {
-        box.className = 'status-box status-error';
-        box.innerHTML = `❌ 오류 발생<br><small>${e.message}</small>`;
+        finishProgress(false);
+        setStatus('status-error', '❌ 오류: ' + e.message);
         btn.disabled = false;
         btn.textContent = '🔍 지금 조회 시작';
       }
     }
 
-    // 서비스 워커 등록 (PWA 오프라인 지원)
+    /* ── 실행 상태 폴링 ── */
+    async function pollRunStatus(token) {
+      try {
+        const res = await fetch(
+          `https://api.github.com/repos/${REPO}/actions/runs?event=workflow_dispatch&per_page=1`,
+          { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/vnd.github+json' } }
+        );
+        const data = await res.json();
+        const run  = data.workflow_runs?.[0];
+
+        if (!run) {
+          pollTimer = setTimeout(() => pollRunStatus(token), 10000);
+          return;
+        }
+
+        const status     = run.status;      // queued / in_progress / completed
+        const conclusion = run.conclusion;  // success / failure / null
+
+        if (status === 'queued') {
+          setStatus('status-running', '⏳ 대기 중 (서버 준비)...', true);
+          pollTimer = setTimeout(() => pollRunStatus(token), 8000);
+
+        } else if (status === 'in_progress') {
+          setStatus('status-running', '🔄 조회 진행 중...', true);
+          pollTimer = setTimeout(() => pollRunStatus(token), 12000);
+
+        } else if (status === 'completed') {
+          if (conclusion === 'success') {
+            setStatus('status-done', '✅ 조회 완료! 결과를 불러오는 중...');
+            finishProgress(true);
+            // GitHub Pages 캐시 갱신 대기 후 결과 로드
+            setTimeout(() => loadResults(true), 5000);
+          } else {
+            setStatus('status-error', `❌ 조회 실패 (${conclusion})`);
+            finishProgress(false);
+            resetBtn();
+          }
+        }
+      } catch (e) {
+        // 네트워크 오류 시 재시도
+        pollTimer = setTimeout(() => pollRunStatus(token), 15000);
+      }
+    }
+
+    function resetBtn() {
+      const btn = document.getElementById('runBtn');
+      btn.disabled = false;
+      btn.textContent = '🔍 지금 조회 시작';
+    }
+
+    /* ── 결과 로드 및 표시 ── */
+    async function loadResults(afterRun = false) {
+      try {
+        const res = await fetch(RESULTS_URL + '?t=' + Date.now());
+        if (!res.ok) throw new Error('결과 파일 없음');
+        const data = await res.json();
+        renderResults(data);
+        if (afterRun) {
+          setStatus('status-done', `✅ 조회 완료 · ${data.total}개 슬롯 발견`);
+          resetBtn();
+        }
+      } catch (e) {
+        if (afterRun) {
+          setStatus('status-error', '결과 파일을 불러오지 못했습니다. 잠시 후 새로고침 해주세요.');
+          resetBtn();
+        }
+      }
+    }
+
+    function renderResults(data) {
+      const panel = document.getElementById('resultPanel');
+
+      if (!data || data.total === 0) {
+        panel.innerHTML = `
+          <div class="result-meta">조회: ${data?.queried_at || '-'}</div>
+          <div class="empty-msg">😔 예약 가능한 슬롯이 없습니다</div>`;
+        return;
+      }
+
+      // 날짜별로 그룹핑
+      const groups = {};
+      for (const slot of data.slots) {
+        if (!groups[slot.date]) groups[slot.date] = [];
+        groups[slot.date].push(slot);
+      }
+
+      let html = `<div class="result-meta">조회: ${data.queried_at} · 총 ${data.total}개 슬롯</div>`;
+
+      for (const [dateLabel, slots] of Object.entries(groups)) {
+        html += `<div class="date-group">`;
+        html += `<div class="date-label">📅 ${dateLabel}</div>`;
+        for (const s of slots) {
+          html += `
+            <div class="slot-row">
+              <span class="slot-time">${s.time}</span>
+              <span class="slot-course">${s.course}</span>
+              <span class="slot-badge">예약가능</span>
+            </div>`;
+        }
+        html += `</div>`;
+      }
+
+      panel.innerHTML = html;
+    }
+
+    /* ── 초기 로드 ── */
+    window.addEventListener('load', () => {
+      loadResults(false);
+    });
+
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js').catch(() => {});
     }

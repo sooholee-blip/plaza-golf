@@ -7,10 +7,11 @@
 """
 
 import asyncio
+import json
 import os
 import re
 import smtplib
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
@@ -270,6 +271,35 @@ def build_email(slots: list[str], query_date: str) -> tuple[str, str]:
     return subject, body
 
 
+# ── 결과 JSON 저장 ────────────────────────────
+def save_results_json(slots: list[str], query_date: str):
+    kst_now = datetime.now(timezone.utc).astimezone(
+        timezone(timedelta(hours=9))
+    ).strftime("%Y-%m-%d %H:%M KST")
+
+    parsed = []
+    for s in slots:
+        # 형식: "2026-06-09(Tue) 07:00 타이거(OUT)"
+        parts = s.split(" ", 2)
+        parsed.append({
+            "date":   parts[0] if len(parts) > 0 else s,
+            "time":   parts[1] if len(parts) > 1 else "",
+            "course": parts[2] if len(parts) > 2 else "",
+        })
+
+    data = {
+        "queried_at": kst_now,
+        "query_date": query_date,
+        "total": len(slots),
+        "slots": parsed,
+    }
+
+    out_path = os.path.join(os.path.dirname(__file__), "web", "results.json")
+    with open(out_path, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+    print(f"[JSON] 저장 완료 → {out_path}")
+
+
 # ── 메인 ──────────────────────────────────────
 async def main():
     global _month_advances
@@ -308,6 +338,9 @@ async def main():
                 print(f"  ✅ {s}")
 
         await browser.close()
+
+    # ── 결과 JSON 저장 ─────────────────────────
+    save_results_json(all_slots, today_str)
 
     # ── 이메일 발송 ────────────────────────────
     subject, body = build_email(all_slots, today_str)
