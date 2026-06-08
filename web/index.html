@@ -18,77 +18,64 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 36px 20px 60px;
+      padding: 32px 16px 60px;
       color: white;
     }
 
-    .header {
-      text-align: center;
-      margin-bottom: 28px;
+    /* ── 헤더 ── */
+    .header { text-align: center; margin-bottom: 24px; }
+    .golf-icon { font-size: 48px; margin-bottom: 8px; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3)); }
+    h1 { font-size: 19px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 3px; }
+    .subtitle { font-size: 12px; opacity: 0.65; }
+
+    /* ── 조회 버튼 3개 ── */
+    .mode-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      width: 100%;
+      max-width: 420px;
+      margin-bottom: 14px;
     }
 
-    .golf-icon { font-size: 56px; margin-bottom: 10px; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3)); }
-
-    h1 { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 4px; }
-
-    .subtitle { font-size: 13px; opacity: 0.7; }
-
-    /* ── 버튼 ── */
-    .run-btn {
-      width: 100%; max-width: 400px;
-      padding: 16px;
-      background: #ffffff; color: #1a5c38;
-      border: none; border-radius: 14px;
-      font-size: 16px; font-weight: 700;
+    .mode-btn {
+      padding: 14px 6px;
+      border: 2px solid rgba(255,255,255,0.25);
+      border-radius: 14px;
+      background: rgba(255,255,255,0.1);
+      color: white;
+      font-size: 13px;
+      font-weight: 600;
       cursor: pointer;
-      transition: all 0.2s;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+      transition: all 0.18s;
+      text-align: center;
+      line-height: 1.4;
     }
-    .run-btn:active { transform: scale(0.97); }
-    .run-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+    .mode-btn:active { transform: scale(0.95); }
+    .mode-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .mode-btn .range { font-size: 11px; opacity: 0.7; font-weight: 400; display: block; margin-top: 2px; }
+    .mode-btn.active {
+      background: white;
+      color: #1a5c38;
+      border-color: white;
+    }
 
     /* ── 상태바 ── */
     .status-bar {
-      width: 100%; max-width: 400px;
-      margin-top: 14px;
-      padding: 13px 18px;
+      width: 100%; max-width: 420px;
+      padding: 11px 16px;
       border-radius: 12px;
-      font-size: 14px; font-weight: 500;
-      display: none; align-items: center; gap: 10px;
+      font-size: 13px; font-weight: 500;
+      display: none; align-items: center; gap: 9px;
+      margin-bottom: 10px;
     }
     .status-bar.show { display: flex; }
-
-    .status-idle    { background: rgba(255,255,255,0.1);  border: 1px solid rgba(255,255,255,0.2); }
     .status-running { background: rgba(255,200,0,0.18);   border: 1px solid rgba(255,200,0,0.35);  color: #ffe066; }
     .status-done    { background: rgba(100,255,150,0.15); border: 1px solid rgba(100,255,150,0.3); color: #7dffaa; }
     .status-error   { background: rgba(255,100,100,0.15); border: 1px solid rgba(255,100,100,0.3); color: #ff9999; }
 
-    /* 진행 프로그레스 바 */
-    .progress-wrap {
-      width: 100%; max-width: 400px;
-      margin-top: 10px;
-      height: 4px;
-      background: rgba(255,255,255,0.15);
-      border-radius: 4px;
-      overflow: hidden;
-      display: none;
-    }
-    .progress-wrap.show { display: block; }
-    .progress-fill {
-      height: 100%;
-      background: #ffe066;
-      border-radius: 4px;
-      width: 0%;
-      transition: width 0.5s ease;
-      animation: progress-pulse 2s ease-in-out infinite;
-    }
-    @keyframes progress-pulse {
-      0%,100% { opacity: 1; }
-      50%      { opacity: 0.6; }
-    }
-
     .spinner {
-      width: 16px; height: 16px; flex-shrink: 0;
+      width: 15px; height: 15px; flex-shrink: 0;
       border: 2px solid rgba(255,200,0,0.3);
       border-top-color: #ffe066;
       border-radius: 50%;
@@ -96,47 +83,84 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ── 결과 패널 ── */
-    .result-panel {
-      width: 100%; max-width: 400px;
-      margin-top: 22px;
+    /* ── 프로그레스 바 ── */
+    .progress-wrap {
+      width: 100%; max-width: 420px;
+      height: 4px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 4px;
+      overflow: hidden;
+      display: none;
+      margin-bottom: 14px;
+    }
+    .progress-wrap.show { display: block; }
+    .progress-fill {
+      height: 100%; width: 0%;
+      background: #ffe066;
+      border-radius: 4px;
+      transition: width 0.5s ease;
     }
 
-    .result-meta {
-      font-size: 12px; opacity: 0.55;
-      margin-bottom: 12px; text-align: right;
+    /* ── 탭 (결과 선택) ── */
+    .tab-bar {
+      display: flex;
+      width: 100%; max-width: 420px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 12px;
+      padding: 4px;
+      gap: 4px;
+      margin-bottom: 14px;
     }
+    .tab {
+      flex: 1; padding: 9px 4px;
+      border-radius: 9px;
+      font-size: 12px; font-weight: 600;
+      text-align: center;
+      cursor: pointer;
+      opacity: 0.55;
+      transition: all 0.18s;
+      position: relative;
+    }
+    .tab.active { background: rgba(255,255,255,0.18); opacity: 1; }
+    .tab .badge {
+      display: inline-block;
+      background: #7dffaa; color: #0f3d20;
+      font-size: 10px; font-weight: 700;
+      border-radius: 20px;
+      padding: 1px 5px;
+      margin-left: 4px;
+      vertical-align: middle;
+    }
+
+    /* ── 결과 패널 ── */
+    .result-panel { width: 100%; max-width: 420px; }
+    .result-meta { font-size: 11px; opacity: 0.45; margin-bottom: 10px; text-align: right; }
 
     .empty-msg {
-      text-align: center;
-      padding: 36px 0;
-      opacity: 0.5;
-      font-size: 14px;
+      text-align: center; padding: 40px 0;
+      opacity: 0.45; font-size: 14px;
     }
 
-    .date-group { margin-bottom: 14px; }
-
+    .date-group { margin-bottom: 12px; }
     .date-label {
       font-size: 13px; font-weight: 700;
-      background: rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.12);
       border-radius: 8px;
-      padding: 7px 14px;
-      margin-bottom: 6px;
-      display: flex; align-items: center; gap: 6px;
+      padding: 7px 12px;
+      margin-bottom: 5px;
     }
-
     .slot-row {
       display: flex; align-items: center;
-      background: rgba(255,255,255,0.09);
-      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.1);
       border-radius: 10px;
       padding: 10px 14px;
-      margin-bottom: 5px;
+      margin-bottom: 4px;
       gap: 12px;
     }
     .slot-time { font-size: 18px; font-weight: 700; min-width: 52px; }
     .slot-course { font-size: 13px; opacity: 0.8; }
-    .slot-badge {
+    .slot-avail {
       margin-left: auto;
       background: rgba(100,255,150,0.2);
       border: 1px solid rgba(100,255,150,0.3);
@@ -145,18 +169,11 @@
       padding: 3px 8px; border-radius: 20px;
     }
 
-    .schedule-note {
-      margin-top: 18px;
-      text-align: center;
-      font-size: 12px; opacity: 0.4;
-    }
-
     .token-reset {
-      margin-top: 8px;
+      margin-top: 20px;
       text-align: center;
-      font-size: 11px; opacity: 0.35;
-      cursor: pointer;
-      text-decoration: underline;
+      font-size: 11px; opacity: 0.3;
+      cursor: pointer; text-decoration: underline;
     }
   </style>
 </head>
@@ -165,10 +182,21 @@
   <div class="header">
     <div class="golf-icon">⛳</div>
     <h1>플라자CC 골프 예약 조회</h1>
-    <div class="subtitle">타이거 코스 오전(06:00~11:59) · 30일 이내</div>
+    <div class="subtitle">타이거 코스 · 05:00 ~ 14:59</div>
   </div>
 
-  <button class="run-btn" id="runBtn" onclick="runWorkflow()">🔍 지금 조회 시작</button>
+  <!-- 조회 버튼 3개 -->
+  <div class="mode-grid">
+    <button class="mode-btn" id="btn1" onclick="runWorkflow(1)">
+      1~7일<span class="range">단기</span>
+    </button>
+    <button class="mode-btn" id="btn2" onclick="runWorkflow(2)">
+      8~14일<span class="range">중기</span>
+    </button>
+    <button class="mode-btn" id="btn3" onclick="runWorkflow(3)">
+      15~30일<span class="range">장기</span>
+    </button>
+  </div>
 
   <!-- 상태바 -->
   <div class="status-bar" id="statusBar">
@@ -176,27 +204,38 @@
     <span id="statusText"></span>
   </div>
 
-  <!-- 진행 바 -->
+  <!-- 프로그레스 바 -->
   <div class="progress-wrap" id="progressWrap">
     <div class="progress-fill" id="progressFill"></div>
   </div>
 
-  <!-- 결과 -->
+  <!-- 결과 탭 -->
+  <div class="tab-bar">
+    <div class="tab active" id="tab1" onclick="switchTab(1)">1~7일 <span class="badge" id="badge1" style="display:none"></span></div>
+    <div class="tab"        id="tab2" onclick="switchTab(2)">8~14일 <span class="badge" id="badge2" style="display:none"></span></div>
+    <div class="tab"        id="tab3" onclick="switchTab(3)">15~30일 <span class="badge" id="badge3" style="display:none"></span></div>
+  </div>
+
+  <!-- 결과 패널 -->
   <div class="result-panel" id="resultPanel"></div>
 
-  <div class="schedule-note">버튼을 눌러 원할 때 조회할 수 있습니다</div>
   <div class="token-reset" onclick="resetToken()">토큰 초기화</div>
 
   <script>
     const REPO     = 'sooholee-blip/plaza-golf';
     const WORKFLOW = 'golf_check.yml';
-    const RESULTS_URL = `https://sooholee-blip.github.io/plaza-golf/web/results.json`;
+    const BASE_URL = 'https://sooholee-blip.github.io/plaza-golf/web';
 
+    let currentTab = 1;
     let pollTimer  = null;
     let progressTimer = null;
     let progressVal = 0;
+    let runningMode = null;
 
-    /* ── 토큰 관리 ── */
+    // 탭별 캐시된 결과
+    const cache = { 1: null, 2: null, 3: null };
+
+    /* ── 토큰 ── */
     function getToken() {
       let t = localStorage.getItem('gh_token');
       if (!t) {
@@ -208,7 +247,7 @@
     function resetToken() {
       if (confirm('저장된 토큰을 삭제할까요?')) {
         localStorage.removeItem('gh_token');
-        alert('삭제됐습니다. 다음 조회 시 다시 입력해주세요.');
+        alert('삭제됐습니다.');
       }
     }
 
@@ -217,6 +256,7 @@
       const bar = document.getElementById('statusBar');
       const txt = document.getElementById('statusText');
       const sp  = document.getElementById('statusSpinner');
+      if (!msg) { bar.className = 'status-bar'; return; }
       bar.className = 'status-bar show ' + type;
       txt.textContent = msg;
       sp.style.display = showSpinner ? 'block' : 'none';
@@ -224,16 +264,14 @@
 
     function startProgress() {
       progressVal = 5;
-      const wrap = document.getElementById('progressWrap');
-      const fill = document.getElementById('progressFill');
-      wrap.classList.add('show');
-      fill.style.width = progressVal + '%';
-
+      document.getElementById('progressWrap').classList.add('show');
+      document.getElementById('progressFill').style.background = '#ffe066';
+      document.getElementById('progressFill').style.width = progressVal + '%';
+      clearInterval(progressTimer);
       progressTimer = setInterval(() => {
-        // 최대 90%까지 서서히 채움 (완료 시 100%로 점프)
-        if (progressVal < 90) {
-          progressVal += Math.random() * 2.5;
-          fill.style.width = Math.min(progressVal, 90) + '%';
+        if (progressVal < 88) {
+          progressVal += Math.random() * 2;
+          document.getElementById('progressFill').style.width = progressVal + '%';
         }
       }, 3000);
     }
@@ -247,18 +285,47 @@
         document.getElementById('progressWrap').classList.remove('show');
         fill.style.width = '0%';
         fill.style.background = '#ffe066';
-      }, 1500);
+      }, 1400);
+    }
+
+    /* ── 버튼 상태 ── */
+    function setButtonRunning(mode) {
+      [1, 2, 3].forEach(m => {
+        const btn = document.getElementById('btn' + m);
+        btn.disabled = true;
+        if (m === mode) btn.classList.add('active');
+      });
+    }
+    function resetButtons() {
+      [1, 2, 3].forEach(m => {
+        const btn = document.getElementById('btn' + m);
+        btn.disabled = false;
+        btn.classList.remove('active');
+      });
+    }
+
+    /* ── 탭 전환 ── */
+    function switchTab(mode) {
+      currentTab = mode;
+      [1, 2, 3].forEach(m => {
+        document.getElementById('tab' + m).classList.toggle('active', m === mode);
+      });
+      if (cache[mode]) {
+        renderResults(cache[mode]);
+      } else {
+        document.getElementById('resultPanel').innerHTML =
+          '<div class="empty-msg">조회 버튼을 눌러 데이터를 불러오세요</div>';
+      }
     }
 
     /* ── 워크플로우 트리거 ── */
-    async function runWorkflow() {
+    async function runWorkflow(mode) {
       const TOKEN = getToken();
       if (!TOKEN) return;
 
-      const btn = document.getElementById('runBtn');
-      btn.disabled = true;
-      btn.textContent = '⏳ 조회 요청 중...';
-      setStatus('status-running', '서버에 조회를 요청하는 중...', true);
+      runningMode = mode;
+      setButtonRunning(mode);
+      setStatus('status-running', `${modeLabel(mode)} 조회 요청 중...`, true);
       startProgress();
 
       try {
@@ -271,15 +338,14 @@
               'Accept': 'application/vnd.github+json',
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ ref: 'master' })
+            body: JSON.stringify({ ref: 'master', inputs: { mode: String(mode) } })
           }
         );
 
         if (res.status === 204) {
-          btn.textContent = '⏳ 조회 진행 중...';
-          setStatus('status-running', '조회 진행 중 · 약 3~5분 소요됩니다', true);
-          // 10초 후부터 상태 폴링 시작
-          setTimeout(() => pollRunStatus(TOKEN), 10000);
+          setStatus('status-running', `⏳ ${modeLabel(mode)} 조회 진행 중 · 약 3~5분 소요`, true);
+          switchTab(mode);
+          setTimeout(() => pollRunStatus(TOKEN, mode), 12000);
         } else {
           const err = await res.text();
           throw new Error(`${res.status}: ${err}`);
@@ -287,13 +353,17 @@
       } catch (e) {
         finishProgress(false);
         setStatus('status-error', '❌ 오류: ' + e.message);
-        btn.disabled = false;
-        btn.textContent = '🔍 지금 조회 시작';
+        resetButtons();
       }
     }
 
+    function modeLabel(mode) {
+      return { 1: '1~7일', 2: '8~14일', 3: '15~30일' }[mode];
+    }
+
     /* ── 실행 상태 폴링 ── */
-    async function pollRunStatus(token) {
+    async function pollRunStatus(token, mode) {
+      clearTimeout(pollTimer);
       try {
         const res = await fetch(
           `https://api.github.com/repos/${REPO}/actions/runs?event=workflow_dispatch&per_page=1`,
@@ -303,64 +373,69 @@
         const run  = data.workflow_runs?.[0];
 
         if (!run) {
-          pollTimer = setTimeout(() => pollRunStatus(token), 10000);
+          pollTimer = setTimeout(() => pollRunStatus(token, mode), 10000);
           return;
         }
 
-        const status     = run.status;      // queued / in_progress / completed
-        const conclusion = run.conclusion;  // success / failure / null
+        const status     = run.status;
+        const conclusion = run.conclusion;
 
         if (status === 'queued') {
-          setStatus('status-running', '⏳ 대기 중 (서버 준비)...', true);
-          pollTimer = setTimeout(() => pollRunStatus(token), 8000);
+          setStatus('status-running', '⏳ 서버 대기 중...', true);
+          pollTimer = setTimeout(() => pollRunStatus(token, mode), 8000);
 
         } else if (status === 'in_progress') {
-          setStatus('status-running', '🔄 조회 진행 중...', true);
-          pollTimer = setTimeout(() => pollRunStatus(token), 12000);
+          setStatus('status-running', `🔄 ${modeLabel(mode)} 조회 중...`, true);
+          pollTimer = setTimeout(() => pollRunStatus(token, mode), 12000);
 
         } else if (status === 'completed') {
           if (conclusion === 'success') {
-            setStatus('status-done', '✅ 조회 완료! 결과를 불러오는 중...');
+            setStatus('status-done', `✅ ${modeLabel(mode)} 조회 완료! 결과 불러오는 중...`);
             finishProgress(true);
-            // GitHub Pages 캐시 갱신 대기 후 결과 로드
-            setTimeout(() => loadResults(true), 5000);
+            setTimeout(() => loadResults(mode, true), 5000);
           } else {
             setStatus('status-error', `❌ 조회 실패 (${conclusion})`);
             finishProgress(false);
-            resetBtn();
+            resetButtons();
           }
         }
       } catch (e) {
-        // 네트워크 오류 시 재시도
-        pollTimer = setTimeout(() => pollRunStatus(token), 15000);
+        pollTimer = setTimeout(() => pollRunStatus(token, mode), 15000);
       }
     }
 
-    function resetBtn() {
-      const btn = document.getElementById('runBtn');
-      btn.disabled = false;
-      btn.textContent = '🔍 지금 조회 시작';
-    }
-
-    /* ── 결과 로드 및 표시 ── */
-    async function loadResults(afterRun = false) {
+    /* ── 결과 로드 ── */
+    async function loadResults(mode, afterRun = false) {
       try {
-        const res = await fetch(RESULTS_URL + '?t=' + Date.now());
-        if (!res.ok) throw new Error('결과 파일 없음');
+        const res = await fetch(`${BASE_URL}/results_${mode}.json?t=${Date.now()}`);
+        if (!res.ok) throw new Error('파일 없음');
         const data = await res.json();
-        renderResults(data);
+        cache[mode] = data;
+        updateBadge(mode, data.total);
+        if (currentTab === mode) renderResults(data);
         if (afterRun) {
-          setStatus('status-done', `✅ 조회 완료 · ${data.total}개 슬롯 발견`);
-          resetBtn();
+          setStatus('status-done', `✅ ${modeLabel(mode)} · ${data.total}개 슬롯 발견`);
+          resetButtons();
         }
       } catch (e) {
         if (afterRun) {
-          setStatus('status-error', '결과 파일을 불러오지 못했습니다. 잠시 후 새로고침 해주세요.');
-          resetBtn();
+          setStatus('status-error', '결과를 불러오지 못했습니다. 잠시 후 새로고침 해주세요.');
+          resetButtons();
         }
       }
     }
 
+    function updateBadge(mode, count) {
+      const b = document.getElementById('badge' + mode);
+      if (count > 0) {
+        b.textContent = count;
+        b.style.display = 'inline-block';
+      } else {
+        b.style.display = 'none';
+      }
+    }
+
+    /* ── 결과 렌더링 ── */
     function renderResults(data) {
       const panel = document.getElementById('resultPanel');
 
@@ -371,35 +446,30 @@
         return;
       }
 
-      // 날짜별로 그룹핑
       const groups = {};
       for (const slot of data.slots) {
         if (!groups[slot.date]) groups[slot.date] = [];
         groups[slot.date].push(slot);
       }
 
-      let html = `<div class="result-meta">조회: ${data.queried_at} · 총 ${data.total}개 슬롯</div>`;
-
+      let html = `<div class="result-meta">조회: ${data.queried_at} · 총 ${data.total}개</div>`;
       for (const [dateLabel, slots] of Object.entries(groups)) {
-        html += `<div class="date-group">`;
-        html += `<div class="date-label">📅 ${dateLabel}</div>`;
+        html += `<div class="date-group"><div class="date-label">📅 ${dateLabel}</div>`;
         for (const s of slots) {
-          html += `
-            <div class="slot-row">
-              <span class="slot-time">${s.time}</span>
-              <span class="slot-course">${s.course}</span>
-              <span class="slot-badge">예약가능</span>
-            </div>`;
+          html += `<div class="slot-row">
+            <span class="slot-time">${s.time}</span>
+            <span class="slot-course">${s.course}</span>
+            <span class="slot-avail">예약가능</span>
+          </div>`;
         }
         html += `</div>`;
       }
-
       panel.innerHTML = html;
     }
 
     /* ── 초기 로드 ── */
     window.addEventListener('load', () => {
-      loadResults(false);
+      [1, 2, 3].forEach(m => loadResults(m, false));
     });
 
     if ('serviceWorker' in navigator) {

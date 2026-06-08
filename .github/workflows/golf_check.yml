@@ -1,7 +1,14 @@
 name: 플라자CC 타이거 코스 조회
 
 on:
-  workflow_dispatch:       # 앱에서 수동 실행할 때만
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: '조회 범위 (1: 1~7일 / 2: 8~14일 / 3: 15~30일)'
+        required: true
+        default: '1'
+        type: choice
+        options: ['1', '2', '3']
 
 jobs:
   check-golf:
@@ -30,12 +37,13 @@ jobs:
           GMAIL_USER:    ${{ secrets.GMAIL_USER }}
           GMAIL_APP_PW:  ${{ secrets.GMAIL_APP_PW }}
           NOTIFY_EMAIL:  ${{ secrets.NOTIFY_EMAIL }}
+          QUERY_MODE:    ${{ github.event.inputs.mode }}
         run: python plaza_golf_server.py
 
       - name: 결과 JSON 커밋 및 푸시
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add web/results.json
-          git diff --cached --quiet || git commit -m "chore: 예약 조회 결과 업데이트 $(date +'%Y-%m-%d %H:%M')"
+          git add web/results_${{ github.event.inputs.mode }}.json
+          git diff --cached --quiet || git commit -m "chore: 예약 조회 결과 업데이트 (모드${{ github.event.inputs.mode }}) $(date +'%Y-%m-%d %H:%M')"
           git push

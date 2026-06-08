@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-플라자CC 타이거 코스 오전 예약 가능 슬롯 조회 — GitHub Actions 서버용
+플라자CC 타이거 코스 예약 가능 슬롯 조회 — GitHub Actions 서버용
 - headless 모드로 실행
-- 결과를 Gmail 로 전송
-- 환경변수: PLAZACC_ID, PLAZACC_PW, GMAIL_USER, GMAIL_APP_PW, NOTIFY_EMAIL
+- 결과를 web/results_{mode}.json 으로 저장
+- 환경변수: PLAZACC_ID, PLAZACC_PW, QUERY_MODE (1/2/3)
 """
 
 import asyncio
@@ -20,14 +20,23 @@ from playwright.async_api import async_playwright, Frame, Page
 # ── 환경변수 ──────────────────────────────────
 ID           = os.environ.get("PLAZACC_ID", "sooholee@btstech.co.kr")
 PW           = os.environ.get("PLAZACC_PW", "9799Suho!@")
-GMAIL_USER   = os.environ.get("GMAIL_USER", "")       # 발송 Gmail 주소
-GMAIL_APP_PW = os.environ.get("GMAIL_APP_PW", "")     # Gmail 앱 비밀번호
-NOTIFY_EMAIL = os.environ.get("NOTIFY_EMAIL", "")     # 수신 이메일 (핸드폰 연동)
+GMAIL_USER   = os.environ.get("GMAIL_USER", "")
+GMAIL_APP_PW = os.environ.get("GMAIL_APP_PW", "")
+NOTIFY_EMAIL = os.environ.get("NOTIFY_EMAIL", "")
+QUERY_MODE   = int(os.environ.get("QUERY_MODE", "1"))  # 1, 2, 3
 
 LOGIN_URL    = "https://www.plazacc.co.kr/plzcc/irsweb/golf2/member/login.do"
 BOOKING_HOST = "booking.hanwharesort.co.kr"
-MORNING_HOURS = set(range(6, 12))
-COL_NAMES     = ["타이거(OUT)", "타이거(IN)", "라이온(OUT)", "라이온(IN)"]
+COL_NAMES    = ["타이거(OUT)", "타이거(IN)", "라이온(OUT)", "라이온(IN)"]
+
+# ── 모드별 날짜 범위 및 시간대 ─────────────────
+QUERY_HOURS = set(range(5, 15))   # 05:00 ~ 14:59 공통
+
+MODE_CONFIG = {
+    1: {"day_from":  1, "day_to":  7, "label": "1~7일"},
+    2: {"day_from":  8, "day_to": 14, "label": "8~14일"},
+    3: {"day_from": 15, "day_to": 30, "label": "15~30일"},
+}
 
 
 # ── 이메일 발송 ───────────────────────────────
@@ -51,8 +60,9 @@ def send_email(subject: str, body_html: str):
 
 # ── 날짜 범위 ─────────────────────────────────
 def get_date_range() -> list[date]:
+    cfg   = MODE_CONFIG[QUERY_MODE]
     today = date.today()
-    return [today + timedelta(days=i) for i in range(1, 31)]
+    return [today + timedelta(days=i) for i in range(cfg["day_from"], cfg["day_to"] + 1)]
 
 
 # ── 프레임 대기 ───────────────────────────────
@@ -210,14 +220,14 @@ def parse_slots(html: str, target: date) -> list[str]:
         if not re.match(r"^\d{1,2}:\d{2}$", texts[i]):
             i += 1
             continue
-        for col in range(2):
+        for col in range(2):           # 타이거(OUT)=0, 타이거(IN)=1
             time_str = texts[i + col * 2]
             status   = texts[i + col * 2 + 1]
             m = re.match(r"(\d{1,2}):(\d{2})", time_str)
             if not m:
                 continue
             hour = int(m.group(1))
-            if hour not in MORNING_HOURS:
+            if hour not in QUERY_HOURS:
                 continue
             if "예약" in status and "마감" not in status:
                 t = f"{hour:02d}:{m.group(2)}"
@@ -277,9 +287,9 @@ def save_results_json(slots: list[str], query_date: str):
         timezone(timedelta(hours=9))
     ).strftime("%Y-%m-%d %H:%M KST")
 
+    cfg    = MODE_CONFIG[QUERY_MODE]
     parsed = []
     for s in slots:
-        # 형식: "2026-06-09(Tue) 07:00 타이거(OUT)"
         parts = s.split(" ", 2)
         parsed.append({
             "date":   parts[0] if len(parts) > 0 else s,
@@ -288,13 +298,15 @@ def save_results_json(slots: list[str], query_date: str):
         })
 
     data = {
+        "mode":       QUERY_MODE,
+        "mode_label": cfg["label"],
         "queried_at": kst_now,
         "query_date": query_date,
-        "total": len(slots),
-        "slots": parsed,
+        "total":      len(slots),
+        "slots":      parsed,
     }
 
-    out_path = os.path.join(os.path.dirname(__file__), "web", "results.json")
+    out_path = os.path.join(os.path.dirname(__file__), "web", f"results_{QUERY_MODE}.json")
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
     print(f"[JSON] 저장 완료 → {out_path}")
