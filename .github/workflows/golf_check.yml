@@ -1,9 +1,7 @@
 name: 플라자CC 타이거 코스 조회
 
 on:
-  workflow_dispatch:       # GitHub 앱에서 수동 실행
-  schedule:
-    - cron: '0 22 * * *'  # 매일 오전 7시 KST (UTC 22:00) 자동 실행
+  workflow_dispatch:       # 앱에서 수동 실행할 때만
 
 jobs:
   check-golf:
